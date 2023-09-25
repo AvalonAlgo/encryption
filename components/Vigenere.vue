@@ -92,8 +92,8 @@ const handleReset = () => {
 
           <!-- Encrypt -->
           <div v-if="action === 'encrypt'" class="flex flex-col space-y-2">
-            <UInput required v-model="textInput" type="text" placeholder="Text to encrypt (UTF-8)..." />
-            <UInput required v-model="encryptionKey" type="number" placeholder="Key..." />
+            <UInput v-model="textInput" type="text" placeholder="Text to encrypt (UTF-8)..." />
+            <UInput v-model="encryptionKey" type="text" placeholder="Key..." />
             <UButton block @click="handleEncrypt" label="Encrypt" />
     
             <UCard v-if="encryptedText" class="w-full mx-auto">
@@ -108,7 +108,7 @@ const handleReset = () => {
           <div class="flex flex-col space-y-2">      
             <div v-if="action === 'decrypt'" class="flex flex-col space-y-2">
               <UInput v-model="textInput" type="text" placeholder="Text to decrypt (Base64)..." />
-              <UInput v-model="encryptionKey" type="number" placeholder="Key..." />
+              <UInput v-model="encryptionKey" type="text" placeholder="Key..." />
               <UButton block @click="handleDecrypt" label="Decrypt" />
       
               <UCard v-if="decryptedText" class="w-full mx-auto">
