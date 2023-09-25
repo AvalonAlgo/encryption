@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import {Base64} from 'js-base64';
+
 const actions = ['encrypt', 'decrypt'];
 const action = ref('');
 
@@ -7,70 +9,37 @@ const encryptionKey = ref('');
 const encryptedText = ref('');
 const decryptedText = ref('');
 
-const bytesToBase64 = (bytes: Uint8Array) => {
-  const binString = String.fromCodePoint(...bytes);
-  return btoa(binString);
-};
-
-function base64ToBytes(base64: string) {
-  const binString = atob(base64);
-  return Uint8Array.from(binString, (m) => m.codePointAt(0));
-};
-
 const handleEncrypt = () => {
   if (!encryptionKey || !textInput) {
     return;
-  }
-  // add the key to itself until >= to the plaintext
-  while (encryptionKey.value.length < textInput.value.length) {
-    encryptionKey.value += encryptionKey.value;
-  }
-
-  // take the  substring as long as the plaintext
-  encryptionKey.value = encryptionKey.value.substring(0, textInput.value.length);
-
-  const encoder: TextEncoder = new TextEncoder();
-  const bitsArrayInput: Uint8Array = encoder.encode(textInput.value);
-  const bitsArrayKey: Uint8Array = encoder.encode(encryptionKey.value);
-
-  for (let i = 0; i < bitsArrayInput.length; i++) {
-    bitsArrayInput[i] += bitsArrayKey[i];
-    bitsArrayInput[i] %= 256;
   };
 
-  const decoder: TextDecoder = new TextDecoder();
-  const resultString: string = decoder.decode(bitsArrayInput);
+  const encoder: TextEncoder = new TextEncoder();
+  const byteArray: Uint8Array = encoder.encode(textInput.value);
+  const byteArrayKey: Uint8Array = encoder.encode(encryptionKey.value);
 
-  encryptedText.value = bytesToBase64(encoder.encode(resultString));
-  console.log(encryptedText.value);
+  for (let i = 0; i < byteArray.length; i++) {
+    byteArray[i] = (byteArray[i] + byteArrayKey[i % byteArrayKey.length]) % 256;
+  };
+
+  encryptedText.value = Base64.fromUint8Array(byteArray);
 };
 
 const handleDecrypt = () => {
-  // if (!encryptionKey || !textInput) {
-  //   return;
-  // }
-  // // add the key to itself until >= to the plaintext
-  // while (encryptionKey.value.length < textInput.value.length) {
-  //   encryptionKey.value += encryptionKey.value;
-  // }
-
-  // // take the  substring as long as the plaintext
-  // encryptionKey.value = encryptionKey.value.substring(0, textInput.value.length);
-
-  const decoder: TextDecoder = new TextDecoder();
-  const cypheredString = decoder.decode(base64ToBytes(textInput.value));
-
+  if (!encryptionKey || !textInput) {
+    return;
+  };
+  
   const encoder: TextEncoder = new TextEncoder();
-  const bitsArrayInput: Uint8Array = encoder.encode(cypheredString);
-  const bitsArrayKey: Uint8Array = encoder.encode(encryptionKey.value);
+  const cypheredByteArray = Base64.toUint8Array(textInput.value);
+  const keyByteArray: Uint8Array = encoder.encode(encryptionKey.value);
 
-  for (let i = 0; i < bitsArrayInput.length; i++) {
-    bitsArrayInput[i] = bitsArrayInput[i] - bitsArrayKey[i] + 256;
-    bitsArrayInput[i] %= 256;
+  for (let i = 0; i < cypheredByteArray.length; i++) {
+    cypheredByteArray[i] = (cypheredByteArray[i] - keyByteArray[i % keyByteArray.length] + 256) % 256;
   };
 
-  // console.log(bitsArrayInput);
-  decryptedText.value = decoder.decode(bitsArrayInput);
+  const decoder: TextDecoder = new TextDecoder();
+  decryptedText.value = decoder.decode(cypheredByteArray);
 };
 
 const handleReset = () => {

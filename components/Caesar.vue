@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import {Base64} from 'js-base64';
+
 const actions = ['encrypt', 'decrypt'];
 const action = ref('');
 
@@ -14,47 +16,31 @@ const getShiftAmount = () => {
   return finalShiftAmount;
 };
 
-const bytesToBase64 = (bytes: Uint8Array) => {
-  const binString = String.fromCodePoint(...bytes);
-  return btoa(binString);
-};
-
-function base64ToBytes(base64: string) {
-  const binString = atob(base64);
-  return Uint8Array.from(binString, (m) => m.codePointAt(0));
-};
-
+// ❤️ õpilasest üle 小飼弾 🦄
 const handleEncrypt = () => {
   const encoder: TextEncoder = new TextEncoder();
-  const bitsArray: Uint8Array = encoder.encode(textInput.value);
+  const byteArray: Uint8Array = encoder.encode(textInput.value);
 
   const shiftAmount = getShiftAmount();
 
-  for (let i = 0; i < bitsArray.length; i++) {
-    bitsArray[i] += shiftAmount;
+  for (let i = 0; i < byteArray.length; i++) {
+    byteArray[i] += shiftAmount;
   };
 
-  const decoder: TextDecoder = new TextDecoder();
-  const resultString: string = decoder.decode(bitsArray);
-
-  encryptedText.value = bytesToBase64(encoder.encode(resultString));
+  encryptedText.value = Base64.fromUint8Array(byteArray);
 };
 
-// for decrypting
 const handleDecrypt = () => {
-  const decoder: TextDecoder = new TextDecoder();
-  const cypheredString = decoder.decode(base64ToBytes(textInput.value));
-
-  const encoder: TextEncoder = new TextEncoder();
-  const bitsArray: Uint8Array = encoder.encode(cypheredString);
+  const cypheredByteArray = Base64.toUint8Array(textInput.value);;
 
   const shiftAmount = getShiftAmount();
 
-  for (let i = 0; i < bitsArray.length; i++) {
-    bitsArray[i] -= shiftAmount;
+  for (let i = 0; i < cypheredByteArray.length; i++) {
+    cypheredByteArray[i] -= shiftAmount;
   };
 
-  decryptedText.value = decoder.decode(bitsArray);
+  const decoder: TextDecoder = new TextDecoder();
+  decryptedText.value = decoder.decode(cypheredByteArray);
 };
 
 const handleReset = () => {

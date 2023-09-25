@@ -16,6 +16,7 @@
     "vue-tsc": "^1.8.13"
   },
   "dependencies": {
-    "@nuxt/ui": "^2.8.1"
+    "@nuxt/ui": "^2.8.1",
+    "js-base64": "^3.7.5"
   }
 }
